@@ -212,6 +212,38 @@
       font-weight: 650;
     }
 
+    .fullscreen-button {
+      margin-left: auto;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .transcript-card:fullscreen {
+      width: 100%;
+      height: 100%;
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow: auto;
+      padding: clamp(24px, 6vw, 72px);
+      border: 0;
+      border-radius: 0;
+      background: #101211;
+    }
+
+    .transcript-card:fullscreen .transcript-head,
+    .transcript-card:fullscreen .transcript {
+      width: min(100%, 1100px);
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .transcript-card:fullscreen .transcript {
+      font-size: clamp(32px, 7vw, 88px);
+      line-height: 1.35;
+    }
+
     .text-button {
       min-height: unset;
       padding: 6px 9px;
@@ -331,9 +363,11 @@
         </select>
       </div>
 
-      <section class="transcript-card" aria-label="Live transcript">
+      <section id="transcriptCard" class="transcript-card" aria-label="Live transcript">
         <div class="transcript-head">
           <span class="transcript-label">Live transcript</span>
+          <button class="text-button fullscreen-button" id="fullscreenButton" type="button"
+            aria-label="Show captions in full screen" aria-pressed="false" title="Full screen captions">⛶</button>
           <button class="text-button" id="clearButton" type="button">Clear</button>
         </div>
         <div class="transcript" id="transcript" aria-live="polite" aria-atomic="false">
@@ -438,6 +472,28 @@
         }
       });
     }
+
+    const transcriptCard = document.getElementById("transcriptCard");
+    const fullscreenButton = document.getElementById("fullscreenButton");
+
+    fullscreenButton.addEventListener("click", async function () {
+      try {
+        if (document.fullscreenElement === transcriptCard) {
+          await document.exitFullscreen();
+        } else if (transcriptCard.requestFullscreen) {
+          await transcriptCard.requestFullscreen();
+        }
+      } catch (error) {
+        notice.textContent = "Unable to change full-screen mode. Try again from the button.";
+      }
+    });
+
+    document.addEventListener("fullscreenchange", function () {
+      const isFullscreen = document.fullscreenElement === transcriptCard;
+      fullscreenButton.setAttribute("aria-pressed", String(isFullscreen));
+      fullscreenButton.setAttribute("aria-label", isFullscreen ? "Exit full screen captions" : "Show captions in full screen");
+      fullscreenButton.title = isFullscreen ? "Exit full screen (Esc)" : "Full screen captions";
+    });
 
     document.getElementById("clearButton").addEventListener("click", function () {
       finalText.textContent = "";
